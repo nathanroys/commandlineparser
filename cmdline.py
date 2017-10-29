@@ -3,10 +3,11 @@ import yaml
 
 class Command:
 
-    def __init__(self, command, implementation, arguments):
+    def __init__(self, command, implementation, arguments, description):
         self.command = command
         self.implementation = implementation
         self.arguments = arguments
+        self.description = description
 
     def execute(self, cmd_input):
         parts = self.implementation.split('/')
@@ -96,6 +97,7 @@ class CommandParser:
             for command in self._configuration[self.COMMANDS_TAG]:
                 command_name = command[self.COMMAND_TAG]
                 implementation = command[self.IMPLEMENTATION_TAG]
+                cmd_description = command[self.DESCRIPTION_TAG]
                 arguments = []
 
                 if self.ARGUMENTS_TAG in command:
@@ -109,7 +111,7 @@ class CommandParser:
                         argument = Argument(cmd_type, input_type, name, friendly_name, description)
                         arguments.append(argument)
 
-                command = Command(command_name, implementation, arguments)
+                command = Command(command_name, implementation, arguments, cmd_description)
                 self._registered_commands[command_name] = command
         else:
             raise ValueError('Could not find tag {0}, please check your configuration file.'.format(self.COMMANDS_TAG))

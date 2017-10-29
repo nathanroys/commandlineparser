@@ -1,9 +1,15 @@
 commands:
   - command: 'test'
     implementation: 'test_impl/test_cmd'
+    description: 'Some description of what the command is'
     arguments:
       - type: 'basic'
         input_type: 'str'
         name: 'input_str'
         friendly_name: 'Input String'
         description: 'This is the input string passed by the user'
+      - type: 'basic'
+        input_type: 'str'
+        name: 'second_str'
+        friendly_name: 'Second Input String'
+        description: 'This is the input string passed by the user, secondly...'
