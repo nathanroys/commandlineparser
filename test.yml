@@ -1,0 +1,9 @@
+commands:
+  - command: 'test'
+    implementation: 'test_impl/test_cmd'
+    arguments:
+      - type: 'basic'
+        input_type: 'str'
+        name: 'input_str'
+        friendly_name: 'Input String'
+        description: 'This is the input string passed by the user'
