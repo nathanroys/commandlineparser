@@ -17,12 +17,25 @@ class Command:
 
 class Argument:
 
+    ARGUMENT_PREFIX = '-'
+
     def __init__(self, type, input_type, name, friendly_name, description):
         self.type = type
         self.input_type = input_type
         self.name = name
         self.friendly_name = friendly_name
         self.description = description
+
+    def get_value(self, parts):
+        if (self.ARGUMENT_PREFIX + self.name) in parts:
+            if self.input_type != "None":
+                value = parts[parts.index(self.ARGUMENT_PREFIX + self.name) + 1]
+                return {self.name: value}
+            else:
+                return {self.name: None}
+        else:
+            # TODO: Use custom exception, allow optional args
+            raise ValueError('Could not find argument {0}.'.format(self.friendly_name))
 
 
 class CommandParser:
@@ -70,10 +83,13 @@ class CommandParser:
         :param cmd_input: the string input
         :return: None
         """
-        parts = cmd_input.split(' ')
-        if parts[0] in self._registered_commands:
-            command = self._registered_commands[parts[0]]
-            command.execute(cmd_input)
+        cmd_input = cmd_input[1:]
+        if cmd_input[0] in self._registered_commands:
+            command = self._registered_commands[cmd_input[0]]
+            args = {}
+            for argument in command.arguments:
+                args.update(argument.get_value(cmd_input))
+            command.execute(args)
 
     def __process_configuration(self):
         if self.COMMANDS_TAG in self._configuration:
