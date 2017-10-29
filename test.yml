@@ -8,8 +8,10 @@ commands:
         name: 'input_str'
         friendly_name: 'Input String'
         description: 'This is the input string passed by the user'
+        required: yes
       - type: 'basic'
         input_type: 'str'
         name: 'second_str'
         friendly_name: 'Second Input String'
         description: 'This is the input string passed by the user, secondly...'
+        required: no

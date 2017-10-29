@@ -1,2 +1,7 @@
 def test_cmd(input):
-    print(input['input_str'] + " but second is " + input['second_str'])
+    if 'second_str' in input:
+        second = input['second_str']
+    else:
+        second = "not found!!"
+
+    print(input['input_str'] + " but second is " + second)

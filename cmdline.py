@@ -20,23 +20,30 @@ class Argument:
 
     ARGUMENT_PREFIX = '-'
 
-    def __init__(self, type, input_type, name, friendly_name, description):
+    def __init__(self, type, input_type, name, friendly_name, description, required):
         self.type = type
         self.input_type = input_type
         self.name = name
         self.friendly_name = friendly_name
         self.description = description
+        self.required = required;
 
     def get_value(self, parts):
         if (self.ARGUMENT_PREFIX + self.name) in parts:
             if self.input_type != "None":
-                value = parts[parts.index(self.ARGUMENT_PREFIX + self.name) + 1]
-                return {self.name: value}
+                if parts.index((self.ARGUMENT_PREFIX + self.name)) + 1 < len(parts):
+                    value = parts[parts.index(self.ARGUMENT_PREFIX + self.name) + 1]
+                    return {self.name: value}
+                else:
+                    raise ValueError('Argument {0} given, but no value given.'.format(self.friendly_name))
             else:
                 return {self.name: None}
         else:
-            # TODO: Use custom exception, allow optional args
-            raise ValueError('Could not find argument {0}.'.format(self.friendly_name))
+            # TODO: Use custom exception
+            if self.required:
+                raise ValueError('Could not find argument {0}.'.format(self.friendly_name))
+            else:
+                return None
 
 
 class CommandParser:
@@ -54,6 +61,7 @@ class CommandParser:
     NAME_TAG = 'name'
     FRIENDLY_NAME_TAG = 'friendly_name'
     DESCRIPTION_TAG = 'description'
+    REQUIRED_TAG = 'required'
 
     def __init__(self, configuration_file):
         self._configuration_file = configuration_file
@@ -89,7 +97,14 @@ class CommandParser:
             command = self._registered_commands[cmd_input[0]]
             args = {}
             for argument in command.arguments:
-                args.update(argument.get_value(cmd_input))
+                try:
+                    value = argument.get_value(cmd_input)
+                    if value is not None:
+                        args.update(value)
+                except ValueError as e:
+                    raise e
+                    return
+
             command.execute(args)
 
     def __process_configuration(self):
@@ -107,8 +122,9 @@ class CommandParser:
                         name = argument[self.NAME_TAG]
                         friendly_name = argument[self.FRIENDLY_NAME_TAG]
                         description = argument[self.DESCRIPTION_TAG]
+                        required = argument[self.REQUIRED_TAG]
 
-                        argument = Argument(cmd_type, input_type, name, friendly_name, description)
+                        argument = Argument(cmd_type, input_type, name, friendly_name, description, required)
                         arguments.append(argument)
 
                 command = Command(command_name, implementation, arguments, cmd_description)
