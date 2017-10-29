@@ -8,6 +8,12 @@ class Command:
         self.implementation = implementation
         self.arguments = arguments
 
+    def execute(self, cmd_input):
+        parts = self.implementation.split('/')
+        module = __import__(parts[0])
+        func = getattr(module, parts[1])
+        func(cmd_input)
+
 
 class Argument:
 
@@ -38,6 +44,7 @@ class CommandParser:
     def __init__(self, configuration_file):
         self._configuration_file = configuration_file
         self._configuration = {}
+        self._registered_commands = {}
 
     def load_configuration(self):
         """
@@ -56,6 +63,17 @@ class CommandParser:
             self.__process_configuration()
         except:
             raise ValueError('Could not open {0} for reading.'.format(self._configuration_file))
+
+    def process_input(self, cmd_input):
+        """
+        Takes the input as a string and processes then executes the command
+        :param cmd_input: the string input
+        :return: None
+        """
+        parts = cmd_input.split(' ')
+        if parts[0] in self._registered_commands:
+            command = self._registered_commands[parts[0]]
+            command.execute(cmd_input)
 
     def __process_configuration(self):
         if self.COMMANDS_TAG in self._configuration:
@@ -76,6 +94,7 @@ class CommandParser:
                         arguments.append(argument)
 
                 command = Command(command_name, implementation, arguments)
+                self._registered_commands[command_name] = command
         else:
             raise ValueError('Could not find tag {0}, please check your configuration file.'.format(self.COMMANDS_TAG))
 
